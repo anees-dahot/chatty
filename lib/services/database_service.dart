@@ -40,16 +40,21 @@ class DatabaseService {
 
   Future<void> addMessage(String name, String message) async {
     final db = await database;
-    await db.insert('chat', {
-      'name': name,
-      'message': message,
-    });
-    final data = await db.query('chat');
-    print(data);
+    await db.insert(
+      'chat',
+      {
+        'name': name,
+        'message': message,
+      },
+    );
+ 
   }
 
   Future<List<Map<String, dynamic>>> getMessages() async {
     final db = await database;
-    return await db.query('chat');
+    final data =  await db.query('chat');
+    List<Map<String, dynamic>> messages = data;
+    print(messages.first['name']);
+    return messages;
   }
 }
