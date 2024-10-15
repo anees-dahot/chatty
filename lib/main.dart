@@ -1,3 +1,4 @@
+import 'package:chat_app/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Text('dsds'),
+      home: ChatScreen(),
     );
   }
 }
