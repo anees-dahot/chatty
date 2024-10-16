@@ -25,16 +25,17 @@ class MessageBubble extends StatelessWidget {
         children: [
           Container(
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isError
-                    ? [Colors.red[900]!, Colors.red[700]!]
-                    : (isMe
-                        ? [Colors.blue[700]!, Colors.blue[500]!]
-                        : [Colors.grey[800]!, Colors.grey[700]!]),
+                    ? [Colors.red[700]!, Colors.red[500]!]
+                    : [
+                        const Color(0xFFFF416C),
+                        const Color.fromARGB(255, 10, 82, 216),
+                      ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -42,14 +43,14 @@ class MessageBubble extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: _buildMessageContent(),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             time,
             style: TextStyle(
@@ -89,17 +90,17 @@ class MessageBubble extends StatelessWidget {
       if (match.start > lastIndex) {
         spans.add(TextSpan(
           text: text.substring(lastIndex, match.start),
-          style: TextStyle(
-            color: isError ? Colors.white : Colors.white,
-            fontSize: 15,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
           ),
         ));
       }
       spans.add(TextSpan(
         text: match.group(1),
-        style: TextStyle(
-          color: isError ? Colors.white : Colors.white,
-          fontSize: 15,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ));
@@ -109,9 +110,9 @@ class MessageBubble extends StatelessWidget {
     if (lastIndex < text.length) {
       spans.add(TextSpan(
         text: text.substring(lastIndex),
-        style: TextStyle(
-          color: isError ? Colors.white : Colors.white,
-          fontSize: 15,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
         ),
       ));
     }
@@ -137,7 +138,7 @@ class CodeBlock extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: isMe ? Colors.blue[900] : Colors.grey[900],
+        color: Colors.black.withOpacity(0.6),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -148,19 +149,19 @@ class CodeBlock extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Code',
                   style: TextStyle(
-                    color: Colors.grey[300],
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.copy,
                     size: 18,
-                    color: Colors.grey[300],
+                    color: Colors.white,
                   ),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: code));
@@ -175,13 +176,13 @@ class CodeBlock extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: Colors.black.withOpacity(0.3),
               borderRadius: BorderRadius.circular(8),
             ),
             child: SelectableText(
               code.trim(),
-              style: TextStyle(
-                color: Colors.grey[300],
+              style: const TextStyle(
+                color: Colors.white,
                 fontSize: 14,
                 fontFamily: 'Roboto Mono',
                 height: 1.5,

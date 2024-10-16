@@ -1,4 +1,4 @@
-import 'package:chat_app/model/chat_model.dart';
+import 'package:chat_app/model/message_model.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -20,16 +20,16 @@ class DatabaseHelper {
   return await databaseFactory.openDatabase(
     databasePath,
     options: OpenDatabaseOptions(
-      version: 3,  // Increment this
+      version: 1,  // Increment this
       onCreate: (db, version) async {
         await _createTables(db);
       },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
-          await db.execute('DROP TABLE IF EXISTS messages');
-          await _createTables(db);
-        }
-      },
+      // onUpgrade: (db, oldVersion, newVersion) async {
+      //   if (oldVersion < 4) {
+      //     await db.execute('DROP TABLE IF EXISTS messages');
+      //     await _createTables(db);
+      //   }
+      // },
     ),
   );
 }
@@ -40,6 +40,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         content TEXT NOT NULL,
         isByMe INTEGER NOT NULL,
+        isError INTEGER NOT NULL,
         timestamp TEXT NOT NULL
       )
     ''');

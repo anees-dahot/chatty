@@ -3,7 +3,6 @@ import 'package:chat_app/widgets/message_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_app/provider/chat_provider.dart';
-import 'package:chat_app/model/chat_model.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -27,18 +26,14 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+     backgroundColor: const Color(0xFF101820), // Modern dark theme
       appBar: AppBar(
         title: const Text(
           'Chatty',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF1E1E1E),
-        foregroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: const Color(0xFF1F2937), // Darker top bar
+        elevation: 2,
       ),
       body: Column(
         children: [
@@ -55,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         message: message.content,
                         isMe: message.isByMe == 1 ? true : false,
                         time: message.timestamp.toString(),
-                        isError: false,
+                        isError: message.isError ==1 ? true : false,
                       ),
                     );
                   },
@@ -76,8 +71,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: TextField(
-                      onSubmitted: (value) {
-                        chatService.sendMessage(value, context);
+                      onSubmitted: (value) async {
+                        messageController.clear();
+                        await chatService.sendMessage(value, context);
                       },
                       controller: messageController,
                       style: const TextStyle(color: Colors.white),
@@ -97,14 +93,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     onPressed: () async {
                       final content = messageController.text.trim();
                       if (content.isNotEmpty) {
-                        // final message = Message(
-                        //   content: content,
-                        //   isByMe: 'true',
-                        //   timestamp: DateTime.now(),
-                        // );
-                        // Provider.of<ChatProvider>(context, listen: false).addMessage(message);
                         messageController.clear();
-                        chatService.sendMessage(content, context).then((_) {});
+                        chatService.sendMessage(content, context);
                       }
                     },
                   ),

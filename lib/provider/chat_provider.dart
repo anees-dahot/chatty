@@ -1,6 +1,6 @@
 import 'package:chat_app/helper/datbase_helper.dart';
 import 'package:flutter/foundation.dart';
-import 'package:chat_app/model/chat_model.dart';
+import 'package:chat_app/model/message_model.dart';
 
 class ChatProvider with ChangeNotifier {
   List<Message> _messages = [];

@@ -1,4 +1,4 @@
-import 'package:chat_app/model/chat_model.dart';
+import 'package:chat_app/model/message_model.dart';
 import 'package:chat_app/provider/chat_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
@@ -15,6 +15,7 @@ class ChatService {
     final messageModel = Message(
       content: message,
       isByMe: 1,
+      isError: 0,
       timestamp: DateTime.now(),
     );
     Provider.of<ChatProvider>(context, listen: false).addMessage(messageModel);
@@ -31,6 +32,7 @@ class ChatService {
         final messageModel = Message(
       content:  response.text!,
       isByMe: 0,
+      isError: 0,
       timestamp: DateTime.now(),
     );
     Provider.of<ChatProvider>(context, listen: false).addMessage(messageModel);
@@ -50,6 +52,13 @@ class ChatService {
       //   'isError': true,
       // };
       // messages.add(errorResponse);
+         final messageModel = Message(
+      content:  errorMessage!,
+      isByMe: 0,
+      isError: 1,
+      timestamp: DateTime.now(),
+    );
+    Provider.of<ChatProvider>(context, listen: false).addMessage(messageModel);
     }
   }
 }
