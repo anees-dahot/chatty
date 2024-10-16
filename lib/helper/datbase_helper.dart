@@ -38,7 +38,7 @@ class DatabaseHelper {
     ''');
   }
 
-  void insertMessage(Message message) async {
+  Future<void> insertMessage(Message message) async {
     final db = await database;
     await _createTables(db);
     db.insert('messages', message.toMap());
