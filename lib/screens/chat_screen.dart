@@ -1,6 +1,9 @@
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/widgets/message_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/provider/chat_provider.dart';
+import 'package:chat_app/model/chat_model.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -11,8 +14,15 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController messageController = TextEditingController();
-  List<Map<String, dynamic>> messages = [];
   ChatService chatService = ChatService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ChatProvider>(context, listen: false).loadMessages();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,18 +43,22 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final data = messages[index];
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: MessageBubble(
-                    message: data['content'],
-                    isMe: data['isMe'] == 'true',
-                    time: data['timestamp'],
-                    isError: data['isError'] ?? false,
-                  ),
+            child: Consumer<ChatProvider>(
+              builder: (context, chatProvider, child) {
+                return ListView.builder(
+                  itemCount: chatProvider.messages.length,
+                  itemBuilder: (context, index) {
+                    final message = chatProvider.messages[index];
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: MessageBubble(
+                        message: message.content,
+                        isMe: message.isByMe == 1 ? true : false,
+                        time: message.timestamp.toString(),
+                        isError: false,
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -63,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     child: TextField(
                       onSubmitted: (value) {
-                        chatService.sendMessage(value);
+                        chatService.sendMessage(value, context);
                       },
                       controller: messageController,
                       style: const TextStyle(color: Colors.white),
@@ -81,7 +95,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white, size: 18),
                     onPressed: () async {
-                      chatService.sendMessage(messageController.text);
+                      final content = messageController.text.trim();
+                      if (content.isNotEmpty) {
+                        // final message = Message(
+                        //   content: content,
+                        //   isByMe: 'true',
+                        //   timestamp: DateTime.now(),
+                        // );
+                        // Provider.of<ChatProvider>(context, listen: false).addMessage(message);
+                        messageController.clear();
+                        chatService.sendMessage(content, context).then((_) {});
+                      }
                     },
                   ),
                 ),

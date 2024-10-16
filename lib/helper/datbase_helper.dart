@@ -15,24 +15,31 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    final databaseDirPath = await getDatabasesPath();
-    final databasePath = join(databaseDirPath, 'chatty.db');
-    return await databaseFactory.openDatabase(
-      databasePath,
-      options: OpenDatabaseOptions(
-        version: 1,
-        onCreate: (db, version) async {
+  final databaseDirPath = await getDatabasesPath();
+  final databasePath = join(databaseDirPath, 'chatty.db');
+  return await databaseFactory.openDatabase(
+    databasePath,
+    options: OpenDatabaseOptions(
+      version: 3,  // Increment this
+      onCreate: (db, version) async {
+        await _createTables(db);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 3) {
+          await db.execute('DROP TABLE IF EXISTS messages');
           await _createTables(db);
-        },
-      ),
-    );
-  }
+        }
+      },
+    ),
+  );
+}
 
   Future<void> _createTables(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         content TEXT NOT NULL,
+        isByMe INTEGER NOT NULL,
         timestamp TEXT NOT NULL
       )
     ''');
@@ -40,9 +47,8 @@ class DatabaseHelper {
 
   Future<void> insertMessage(Message message) async {
     final db = await database;
-    await _createTables(db);
-    db.insert('messages', message.toMap());
-    final data = db.query('messages');
+    await db.insert('messages', message.toMap());
+    final data = await db.query('messages');
     print(data);
   }
 

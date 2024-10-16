@@ -1,7 +1,7 @@
 class Message {
   final int? id;
   final String content;
-  final String isByMe;
+  final int isByMe;
   final DateTime timestamp;
 
   Message(
