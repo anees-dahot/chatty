@@ -1,3 +1,4 @@
+import 'package:chat_app/model/chat_model.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,7 +14,7 @@ class DatabaseHelper {
     return _db!;
   }
 
- Future<Database> _initDatabase() async {
+  Future<Database> _initDatabase() async {
     final databaseDirPath = await getDatabasesPath();
     final databasePath = join(databaseDirPath, 'chatty.db');
     return await databaseFactory.openDatabase(
@@ -37,7 +38,11 @@ class DatabaseHelper {
     ''');
   }
 
-  
-
-  
+  void insertMessage(Message message) async {
+    final db = await database;
+    await _createTables(db);
+    db.insert('messages', message.toMap());
+    final data = db.query('messages');
+    print(data);
+  }
 }
