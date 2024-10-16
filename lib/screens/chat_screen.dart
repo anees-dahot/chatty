@@ -1,6 +1,6 @@
+import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/widgets/message_bubble.dart';
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,7 +12,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController messageController = TextEditingController();
   List<Map<String, dynamic>> messages = [];
-  ScrollController scrollController = ScrollController();
+  ChatService chatService = ChatService();
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,6 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: ListView.builder(
-              controller: scrollController,
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final data = messages[index];
@@ -64,7 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     child: TextField(
                       onSubmitted: (value) {
-                        
+                        chatService.sendMessage(value);
                       },
                       controller: messageController,
                       style: const TextStyle(color: Colors.white),
@@ -82,62 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white, size: 18),
                     onPressed: () async {
-                     final model = GenerativeModel(
-                        model: 'gemini-1.5-flash-latest',
-                       apiKey: 'AIzaSyCu7yeA3GYn19Q3gDxw1IGVEwuj-0OgunY',
-                      );
-                      print('model run');
-
-                      Map<String, dynamic> myMessage = {
-                        'content': messageController.text,
-                        'isMe': 'true',
-                        'timestamp': DateTime.now().toString(),
-                      };
-                      messages.add(myMessage);
-                      setState(() {});
-
-                      final prompt = messageController.text;
-                      final content = [Content.text(prompt)];
-                      print(content);
-
-                      try {
-                        final response = await model.generateContent(content);
-                        print(response.text);
-
-                        Map<String, dynamic> aiResponse = {
-                          'content': response.text,
-                          'isMe': 'false',
-                          'timestamp': DateTime.now().toString(),
-                        };
-                        messages.add(aiResponse);
-                      } catch (e) {
-                        print('Error: $e');
-
-                        String errorMessage =
-                            'An error occurred. Please check your internet connection and try again.';
-                        if (e.toString().contains('Failed host lookup')) {
-                          errorMessage =
-                              'Unable to connect to the AI service. Please check your internet connection and try again.';
-                        }
-                        Map<String, dynamic> errorResponse = {
-                          'content': errorMessage,
-                          'isMe': 'false',
-                          'timestamp': DateTime.now().toString(),
-                          'isError': true,
-                        };
-                        messages.add(errorResponse);
-                      }
-
-                      setState(() {
-                        // Automatically scroll to the bottom after sending a message.
-                        scrollController.animateTo(
-                          scrollController.position.maxScrollExtent,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      });
-
-                      messageController.clear();
+                      chatService.sendMessage(messageController.text);
                     },
                   ),
                 ),
