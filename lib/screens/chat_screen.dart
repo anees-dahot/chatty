@@ -13,7 +13,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController messageController = TextEditingController();
-  ChatService chatService = ChatService();
+  final ChatService chatService = ChatService();
 
   @override
   void initState() {
@@ -23,14 +23,20 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+ 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     backgroundColor: const Color(0xFF101820), // Modern dark theme
+      backgroundColor: const Color(0xFF101820), // Modern dark theme
       appBar: AppBar(
         title: const Text(
           'Chatty',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
         backgroundColor: const Color(0xFF1F2937), // Darker top bar
         elevation: 2,
@@ -49,8 +55,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: MessageBubble(
                         message: message.content,
                         isMe: message.isByMe == 1 ? true : false,
-                        time: message.timestamp.toString(),
-                        isError: message.isError ==1 ? true : false,
+                        time: message.timestamp,
+                        isError: message.isError == 1 ? true : false,
                       ),
                     );
                   },
@@ -58,6 +64,42 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
+
+          // Typing indicator with animated dots
+          Consumer<ChatProvider>(
+            builder: (context, chatProvider, child) {
+              return Visibility(
+                visible: chatProvider.isTyping, // Show only if typing is true
+                child: Container(
+                  alignment: Alignment.bottomLeft,
+                  padding: const EdgeInsets.all(12),
+                  child: const Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Colors.red,
+                        radius: 4,
+                      ),
+                      SizedBox(width: 8),
+                      AnimatedSwitcher(
+                        duration: Duration(milliseconds: 300),
+                        child: Text(
+                          'Typing${'...'}', // Show dots based on _dotCount
+                       
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Message input area
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             color: const Color(0xFF1E1E1E),

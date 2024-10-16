@@ -1,10 +1,11 @@
+import 'package:chat_app/utils/date_formater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
-  final String time;
+  final DateTime time;
   final bool isError;
 
   const MessageBubble({
@@ -51,13 +52,14 @@ class MessageBubble extends StatelessWidget {
             child: _buildMessageContent(),
           ),
           const SizedBox(height: 4),
-          Text(
-            time,
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 12,
-            ),
-          ),
+         Text(
+  formatTimestamp(time), // Format the timestamp based on date
+  style: TextStyle(
+    color: Colors.grey[400],
+    fontSize: 12,
+  ),
+),
+
         ],
       ),
     );
