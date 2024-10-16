@@ -45,4 +45,17 @@ class DatabaseHelper {
     final data = db.query('messages');
     print(data);
   }
+
+  Future<List<Message>> getMessages() async {
+    final db = await database;
+    await _createTables(db);
+    try {
+      final maps = await db.query('messages');
+      return List.generate(maps.length, (i) => Message.fromMap(maps[i]));
+    } catch (e) {
+      // If the table doesn't exist or there's any other error, return an empty list
+      print('Error fetching messages: $e');
+      return [];
+    }
+  }
 }
