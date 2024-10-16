@@ -1,3 +1,4 @@
+import 'package:chat_app/widgets/message_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
@@ -11,6 +12,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController messageController = TextEditingController();
   List<Map<String, dynamic>> messages = [];
+  ScrollController scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
             itemBuilder: (context, index) {
               final data = messages[index];
               return Padding(
-                padding: EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: MessageBubble(
                     message: data['content'],
                     isMe: data['isMe'] == 'true' ? true : false,
@@ -98,9 +100,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         messages.add(aiResponse);
                       } catch (e) {
                         print('Error: $e');
-                        String errorMessage = 'An error occurred. Please check your internet connection and try again.';
+                        String errorMessage =
+                            'An error occurred. Please check your internet connection and try again.';
                         if (e.toString().contains('Failed host lookup')) {
-                          errorMessage = 'Unable to connect to the AI service. Please check your internet connection and try again.';
+                          errorMessage =
+                              'Unable to connect to the AI service. Please check your internet connection and try again.';
                         }
                         Map<String, dynamic> errorResponse = {
                           'content': errorMessage,
@@ -124,59 +128,4 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class MessageBubble extends StatelessWidget {
-  final String message;
-  final bool isMe;
-  final String time;
-  final bool isError;
 
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMe,
-    required this.time,
-    this.isError = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isError ? Colors.red[100] : (isMe ? Colors.blue[500] : Colors.white),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Text(
-              message,
-              style: TextStyle(
-                color: isError ? Colors.red[900] : (isMe ? Colors.white : Colors.black87),
-                fontSize: 15,
-              ),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            time,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
