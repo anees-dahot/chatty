@@ -19,48 +19,62 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isError
-                    ? [Colors.red[700]!, Colors.red[500]!]
-                    : [
-                        const Color(0xFFFF416C),
-                        const Color.fromARGB(255, 10, 82, 216),
-                      ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+          Row(
+            mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isMe) _buildAvatar(),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isMe 
+                      ? Colors.grey[100] // Light blue for user messages
+                      : null,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _buildMessageContent(),
                 ),
-              ],
-            ),
-            child: _buildMessageContent(),
+              ),
+              // const SizedBox(width: 8),
+              // isMe ? const SizedBox() : _buildAvatar(),
+            ],
           ),
-          const SizedBox(height: 4),
-         Text(
-  formatTimestamp(time), // Format the timestamp based on date
-  style: TextStyle(
-    color: Colors.grey[400],
-    fontSize: 12,
-  ),
-),
-
+          Padding(
+            padding: EdgeInsets.only(
+              left: isMe ? 0 : 36,
+              right: isMe ? 36 : 0,
+              top: 4,
+            ),
+            child: Text(
+              formatTimestamp(time),
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 11,
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    return const CircleAvatar(
+      radius: 14,
+      backgroundColor:  Colors.teal,
+      child: Icon(
+        Icons.android,
+        size: 16,
+        color: Colors.white,
       ),
     );
   }
@@ -68,22 +82,26 @@ class MessageBubble extends StatelessWidget {
   Widget _buildMessageContent() {
     final parts = message.split(RegExp(r'```'));
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(parts.length, (index) {
-        if (index.isEven) {
-          return _buildTextWithBoldParts(parts[index]);
-        } else {
-          return CodeBlock(
-            code: parts[index],
-            isMe: isMe,
-          );
-        }
-      }),
+    return SelectableText.rich(
+      TextSpan(
+        children: List.generate(parts.length, (index) {
+          if (index.isEven) {
+            return _buildTextWithBoldParts(parts[index]);
+          } else {
+            // Display the code block
+            return WidgetSpan(
+              child: CodeBlock(
+                code: parts[index].trim(),
+                isMe: isMe,
+              ),
+            );
+          }
+        }),
+      ),
     );
   }
 
-  Widget _buildTextWithBoldParts(String text) {
+  TextSpan _buildTextWithBoldParts(String text) {
     final boldPattern = RegExp(r'\*\*(.*?)\*\*');
     final spans = <InlineSpan>[];
     int lastIndex = 0;
@@ -93,16 +111,16 @@ class MessageBubble extends StatelessWidget {
         spans.add(TextSpan(
           text: text.substring(lastIndex, match.start),
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
+            color: Colors.black,
+            fontSize: 16,
           ),
         ));
       }
       spans.add(TextSpan(
         text: match.group(1),
         style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
+          color: Colors.black,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
       ));
@@ -113,14 +131,18 @@ class MessageBubble extends StatelessWidget {
       spans.add(TextSpan(
         text: text.substring(lastIndex),
         style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
+          color: Colors.black,
+          fontSize: 16,
         ),
       ));
     }
 
-    return RichText(
-      text: TextSpan(children: spans),
+    return TextSpan(
+      children: spans,
+      style: TextStyle(
+        color: Colors.grey[800], // Dark gray text for better readability
+        fontSize: 16,
+      ),
     );
   }
 }
@@ -140,8 +162,9 @@ class CodeBlock extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey, // Very light gray background
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black), // Subtle border
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -154,21 +177,23 @@ class CodeBlock extends StatelessWidget {
                 const Text(
                   'Code',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    color: Colors.black,
+                    fontSize: 12,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.copy,
-                    size: 18,
-                    color: Colors.white,
+                    size: 16,
+                    color: Colors.grey[600],
                   ),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: code));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Code copied to clipboard')),
+                      const SnackBar(
+                        content: Text('Code copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
                     );
                   },
                 ),
@@ -178,14 +203,14 @@ class CodeBlock extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.black, // Light gray code background
+              borderRadius: BorderRadius.circular(4),
             ),
             child: SelectableText(
-              code.trim(),
+              code,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 14,
+                fontSize: 13,
                 fontFamily: 'Roboto Mono',
                 height: 1.5,
               ),

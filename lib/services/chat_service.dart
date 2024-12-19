@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 class ChatService {
   final model = GenerativeModel(
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-2.0-flash-exp',
     apiKey: 'AIzaSyCu7yeA3GYn19Q3gDxw1IGVEwuj-0OgunY',
   );
   Future<void> sendMessage(String message, BuildContext context) async {

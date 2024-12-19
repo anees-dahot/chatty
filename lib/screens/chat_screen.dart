@@ -14,32 +14,55 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController messageController = TextEditingController();
   final ChatService chatService = ChatService();
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ChatProvider>(context, listen: false).loadMessages();
-    });
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.loadMessages();
   }
 
- 
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300), // Fixed duration
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF101820), // Modern dark theme
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Chatty',
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
           ),
         ),
-        backgroundColor: const Color(0xFF1F2937), // Darker top bar
-        elevation: 2,
+        centerTitle: true,
+        backgroundColor: Colors.white, // Light theme app bar
+        elevation: 1,
+        actions: [
+          Consumer<ChatProvider>(
+            builder: (context, chatProvider, child) {
+              return IconButton(
+                onPressed: () {
+                  chatProvider.deleteMessages();
+                },
+                icon: const Icon(Icons.delete),
+              );
+            },
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -48,6 +71,7 @@ class _ChatScreenState extends State<ChatScreen> {
               builder: (context, chatProvider, child) {
                 return ListView.builder(
                   itemCount: chatProvider.messages.length,
+                  controller: scrollController,
                   itemBuilder: (context, index) {
                     final message = chatProvider.messages[index];
                     return Padding(
@@ -84,10 +108,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         duration: Duration(milliseconds: 300),
                         child: Text(
                           'Typing${'...'}', // Show dots based on _dotCount
-                       
+
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white,
+                            color: Colors.black,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -102,23 +126,26 @@ class _ChatScreenState extends State<ChatScreen> {
           // Message input area
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: const Color(0xFF1E1E1E),
+            color: Colors.white, // Light background
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2C2C2C),
+                      color: Colors.grey[100], // Light gray input background
                       borderRadius: BorderRadius.circular(20),
+                      border:
+                          Border.all(color: Colors.grey[300]!), // Subtle border
                     ),
                     child: TextField(
                       onSubmitted: (value) async {
                         messageController.clear();
+                        _scrollToBottom();
                         await chatService.sendMessage(value, context);
                       },
                       controller: messageController,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.black), // Dark text
                       decoration: const InputDecoration(
                         hintText: 'Message',
                         border: InputBorder.none,
@@ -136,7 +163,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       final content = messageController.text.trim();
                       if (content.isNotEmpty) {
                         messageController.clear();
-                        chatService.sendMessage(content, context);
+                        _scrollToBottom();
+
+                        await chatService.sendMessage(content, context);
                       }
                     },
                   ),
@@ -147,5 +176,11 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 }

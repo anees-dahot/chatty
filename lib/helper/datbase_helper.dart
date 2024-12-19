@@ -15,24 +15,24 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-  final databaseDirPath = await getDatabasesPath();
-  final databasePath = join(databaseDirPath, 'chatty.db');
-  return await databaseFactory.openDatabase(
-    databasePath,
-    options: OpenDatabaseOptions(
-      version: 1,  // Increment this
-      onCreate: (db, version) async {
-        await _createTables(db);
-      },
-      // onUpgrade: (db, oldVersion, newVersion) async {
-      //   if (oldVersion < 4) {
-      //     await db.execute('DROP TABLE IF EXISTS messages');
-      //     await _createTables(db);
-      //   }
-      // },
-    ),
-  );
-}
+    final databaseDirPath = await getDatabasesPath();
+    final databasePath = join(databaseDirPath, 'chatty.db');
+    return await databaseFactory.openDatabase(
+      databasePath,
+      options: OpenDatabaseOptions(
+        version: 1, // Increment this
+        onCreate: (db, version) async {
+          await _createTables(db);
+        },
+        // onUpgrade: (db, oldVersion, newVersion) async {
+        //   if (oldVersion < 4) {
+        //     await db.execute('DROP TABLE IF EXISTS messages');
+        //     await _createTables(db);
+        //   }
+        // },
+      ),
+    );
+  }
 
   Future<void> _createTables(Database db) async {
     await db.execute('''
@@ -63,6 +63,15 @@ class DatabaseHelper {
       // If the table doesn't exist or there's any other error, return an empty list
       print('Error fetching messages: $e');
       return [];
+    }
+  }
+
+  Future<void> deleteAllMessages() async {
+    try {
+      final db = await database;
+      await db.delete('messages');
+    } catch (e) {
+      print('Error deleting messages: $e');
     }
   }
 }

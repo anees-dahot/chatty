@@ -22,6 +22,11 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> deleteMessages() async {
+    await _databaseHelper.deleteAllMessages();
+    await loadMessages();
+  }
+
   void setTyping(bool value) {
     _isTyping = value;
     notifyListeners();
