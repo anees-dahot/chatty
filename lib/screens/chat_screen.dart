@@ -1,3 +1,4 @@
+
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/widgets/message_bubble.dart';
 import 'package:flutter/material.dart';
@@ -19,20 +20,21 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
     chatProvider.loadMessages();
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300), // Fixed duration
-          curve: Curves.easeOut,
-        );
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => scrollController.animateTo(
+        scrollController.position.maxScrollExtent,
+        duration: const Duration(
+          milliseconds: 750,
+        ),
+        curve: Curves.easeOutCirc,
+      ),
+    );
   }
 
   @override
@@ -91,37 +93,27 @@ class _ChatScreenState extends State<ChatScreen> {
 
           // Typing indicator with animated dots
           Consumer<ChatProvider>(
-            builder: (context, chatProvider, child) {
-              return Visibility(
-                visible: chatProvider.isTyping, // Show only if typing is true
-                child: Container(
-                  alignment: Alignment.bottomLeft,
-                  padding: const EdgeInsets.all(12),
-                  child: const Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.red,
-                        radius: 4,
-                      ),
-                      SizedBox(width: 8),
-                      AnimatedSwitcher(
-                        duration: Duration(milliseconds: 300),
-                        child: Text(
-                          'Typing${'...'}', // Show dots based on _dotCount
+  builder: (context, chatProvider, child) {
+    return Visibility(
+      visible: chatProvider.isTyping,
+      child: Container(
+        alignment: Alignment.bottomLeft,
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: const [
+            CircleAvatar(
+              backgroundColor: Colors.red,
+              radius: 4,
+            ),
+            SizedBox(width: 8),
+            TypingIndicator(), // Replace with the new TypingIndicator widget
+          ],
+        ),
+      ),
+    );
+  },
+),
 
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
 
           // Message input area
           Container(
@@ -178,9 +170,77 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+
+
   @override
   void dispose() {
     scrollController.dispose();
+
     super.dispose();
   }
 }
+
+
+class TypingIndicator extends StatefulWidget {
+  const TypingIndicator({Key? key}) : super(key: key);
+
+  @override
+  State<TypingIndicator> createState() => _TypingIndicatorState();
+}
+
+class _TypingIndicatorState extends State<TypingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 20,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(3, (index) {
+          return AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _getOpacityForDot(index),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        }),
+      ),
+    );
+  }
+
+  double _getOpacityForDot(int index) {
+    double progress = (_controller.value * 3 - index).clamp(0.0, 1.0);
+    return 1.0 - progress;
+  }
+}
+
